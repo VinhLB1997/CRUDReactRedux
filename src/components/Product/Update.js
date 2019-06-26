@@ -1,19 +1,40 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Button from '../Items/Button'
 import { NavLink } from 'react-router-dom'
 import CallApi from '../../utils/CallApi'
 
-export default function Add(props) {
+export default function Update(props) {
 
     const [name, setName] = useState("")
     const [provider, setProvider] = useState("")
     const [price, setPrice] = useState("")
     const [status, setStatus] = useState(1)
 
+    useEffect(() => {
+        const getProductUpdate = () => {
+            var { id } = props.match.params
+            if (id) {
+                CallApi(`product/${id}`, 'GET', null,
+                    res => {
+                        var product = res.data;
+                        setName(product.name);
+                        setProvider(product.provider);
+                        setPrice(product.price);
+                        setStatus(product.status);
+                    })
+            }
+        }
+
+        getProductUpdate()
+
+    }, [])
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log({ name, provider, price, status })
-        CallApi('product', 'POST', { name, provider, price, status }, res => { props.history.goBack() })
+        var { id } = props.match.params
+        if (id) {
+            CallApi(`product/${id}`, 'PUT', { name, provider, price, status }, res => { props.history.goBack() })
+        }
     }
 
     return (
@@ -39,7 +60,7 @@ export default function Add(props) {
                         <option value={1}>Còn hàng</option>
                     </select>
                 </div>
-                <button type="submit" className="btn btn-default">Lưu</button>
+                <button type="submit" className="btn btn-default">Cập nhật</button>
                 <Button><NavLink to="/product">Hủy</NavLink></Button>
             </form>
         </React.Fragment>
