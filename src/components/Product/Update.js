@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import Button from '../Items/Button'
 import { NavLink } from 'react-router-dom'
-import CallApi from '../../utils/CallApi'
+import { actGetProductByIdApi, actUpdateProductApi } from '../../actions/index'
+import { connect } from 'react-redux'
 
-export default function Update(props) {
+function Update(props) {
 
     const [name, setName] = useState("")
     const [provider, setProvider] = useState("")
@@ -11,29 +12,27 @@ export default function Update(props) {
     const [status, setStatus] = useState(1)
 
     useEffect(() => {
-        const getProductUpdate = () => {
-            var { id } = props.match.params
-            if (id) {
-                CallApi(`product/${id}`, 'GET', null,
-                    res => {
-                        var product = res.data;
-                        setName(product.name);
-                        setProvider(product.provider);
-                        setPrice(product.price);
-                        setStatus(product.status);
-                    })
-            }
+        var { id } = props.match.params
+        if (id) {
+            props.getProductById(id)
         }
-
-        getProductUpdate()
-
     }, [])
+
+    useEffect(() => {
+        var product = props.products;
+        setName(product.name);
+        setProvider(product.provider);
+        setPrice(product.price);
+        setStatus(product.status);
+    }, [props.products])
 
     const handleSubmit = (e) => {
         e.preventDefault();
         var { id } = props.match.params
         if (id) {
-            CallApi(`product/${id}`, 'PUT', { name, provider, price, status }, res => { props.history.goBack() })
+            var product = { name, provider, price, status }
+            props.updateProduct(id, product)
+            props.history.goBack()
         }
     }
 
@@ -66,3 +65,20 @@ export default function Update(props) {
         </React.Fragment>
     );
 }
+const mapStateToProps = state => {
+    return {
+        products: state.products
+    }
+}
+
+const mapDispatchToProps = (dispacth, props) => {
+    return {
+        getProductById: id => {
+            dispacth(actGetProductByIdApi(id))
+        },
+        updateProduct: (id, product) => {
+            dispacth(actUpdateProductApi(id, product))
+        }
+    }
+}
+export default connect(mapStateToProps, mapDispatchToProps)(Update);

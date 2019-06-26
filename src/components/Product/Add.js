@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import Button from '../Items/Button'
 import { NavLink } from 'react-router-dom'
-import CallApi from '../../utils/CallApi'
+import { connect } from 'react-redux'
+import { actAddProductApi } from '../../actions/index'
 
-export default function Add(props) {
+function Add(props) {
 
     const [name, setName] = useState("")
     const [provider, setProvider] = useState("")
@@ -12,8 +13,9 @@ export default function Add(props) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log({ name, provider, price, status })
-        CallApi('product', 'POST', { name, provider, price, status }, res => { props.history.goBack() })
+        var product = { name, provider, price, status }
+        props.addProduct(product)
+        props.history.goBack()
     }
 
     return (
@@ -45,3 +47,12 @@ export default function Add(props) {
         </React.Fragment>
     );
 }
+
+const mapDispatchToProps = (dispacth, props) => {
+    return {
+        addProduct: product => {
+            dispacth(actAddProductApi(product))
+        }
+    }
+}
+export default connect(null, mapDispatchToProps)(Add);

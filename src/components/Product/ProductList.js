@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { connect } from 'react-redux'
 import ProductItem from './ProductItem'
-import CallApi from '../../utils/CallApi'
+import { actFetchAllProductApi, actDeleteProductByIdApi } from '../../actions/index'
 
 
 function ProductList(props) {
-    // var { products } = props
     const [data, setData] = useState([])
 
     useEffect(() => {
-        CallApi('product', 'GET', null, res => { setData(res.data) })
-    }, [data])
+        props.fetchAllProduct()
+    }, [props])
 
+    useEffect(() => {
+        setData(props.products)
+    }, [props.products])
 
     return (
         <div>
@@ -37,11 +39,15 @@ function ProductList(props) {
         </div>
     )
 
+    function onDelete(id) {
+        props.onDelete(id)
+    }
+
     function showProduct(products) {
         var result = null;
         if (products.length > 0) {
             result = products.map((product, index) => {
-                return <ProductItem key={index} product={product} />
+                return <ProductItem key={index} product={product} onDelete={onDelete} />
             })
         }
         return result;
@@ -54,4 +60,15 @@ const mapStateToProps = state => {
     }
 }
 
-export default connect(mapStateToProps, null)(ProductList);
+const mapDispatchToProps = (dispacth, props) => {
+    return {
+        fetchAllProduct: () => {
+            dispacth(actFetchAllProductApi())
+        },
+        onDelete: id => {
+            dispacth(actDeleteProductByIdApi(id))
+        }
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ProductList);
